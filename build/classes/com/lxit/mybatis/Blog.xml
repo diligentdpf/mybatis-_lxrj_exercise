@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxit.mybatis.mapper/BlogMapper">
+	<!-- choose使用 -->
+	<select id="findBlogTitleLike" parameterType="Blog" resultType="Blog">
+		select * from blog where state="active"
+		<choose>
+			<when test="title!=null">
+				and title like #{title}
+			</when>
+			<when test="author!=null and author.name!=null">
+				and title like #{author.name}
+			</when>
+			<otherwise>
+				and id =1
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 动态where -->
+	<select id="findBlogTitleLike1" parameterType="Blog" resultType="Blog">
+		select * from blog 
+		<where>
+			<if test="title!=null">
+				title like #{title}
+			</if>
+			<if test="author!=null and author.name!=null">
+				and title like #{author.name}
+			</if>
+		</where>
+	</select>
+	
+	<!-- set元素 ,会帮你自动去除后面的“，”,如果不加逗号呢-->
+	<update id="updateAuthor" parameterType="Author">
+		update author 
+		<set>
+			<if test="username!=null">username=#{username},</if>
+			<if test="password!=null">password=#{password},</if>
+			<if test="email!=null">email=#{email},</if>
+		</set>
+		wherer id =#{id}
+	</update>
+	
+	 <!-- foreach标签 -->
+	 <select id="selectActionIn" parameterType="Author" resultType="Author">
+	 	select * from author 
+	 	where id in
+	 	<foreach collection="list" item="id" index="seq" open="("  close=")" separator=",">
+	 		#{id}
+	 	</foreach>
+	 </select>
+	 
+	 <!-- sql 映射 -->
+	 <sql id="AuthorColumn">id,username,password</sql>
+	 <select id="selectAuthorInfo" parameterType="int" resultType="Author">
+	 	select 
+	 	<include refid="AuthorColumn" />
+	 	from author where id=#{id}
+	 </select>
+	 
+	 <!-- 映射结果集1 -->
+	 <select id="selectUser" parameterType="int" resultType="hashMap">
+	 	select id,username,password 
+	 	from user 
+	 	where id=#{id}
+	 </select>
+</mapper>
